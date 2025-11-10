@@ -1,0 +1,36 @@
+package com.quantumleap.tests.bdd.steps;
+
+import com.quantumleap.core.WebDriverFactory;
+import com.quantumleap.pages.*;
+import io.cucumber.java.en.*;
+import org.testng.Assert;
+import org.openqa.selenium.WebDriver;
+
+public class AddToCartSteps {
+    private WebDriver driver = WebDriverFactory.getDriver();
+    private LoginPage login = new LoginPage(driver);
+    private ProductsPage products = new ProductsPage(driver);
+    private CartPage cart = new CartPage(driver);
+
+    @Given("I open the Saucedemo login page")
+    public void openLoginPage() {
+        login.open();
+    }
+
+    @When("I login as {string} with password {string}")
+    public void login(String user, String pass) {
+        login.login(user, pass);
+    }
+
+    @When("I add {string} to cart")
+    public void addToCart(String productName) {
+        products.addProductToCart(productName);
+    }
+
+    @Then("the cart should contain {string}")
+    public void verifyCart(String name) {
+        products.goToCart();
+        Assert.assertTrue(cart.hasItem(name), "Cart does not contain expected item");
+        WebDriverFactory.quitDriver();
+    }
+}

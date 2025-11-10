@@ -1,0 +1,54 @@
+package com.quantumleap.tests.api;
+
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
+import org.testng.annotations.*;
+import static org.hamcrest.Matchers.*;
+import static io.restassured.RestAssured.*;
+
+public class ReqResApiTests {
+
+    @BeforeClass
+    public void setup() {
+        RestAssured.baseURI = "https://reqres.in/api";
+    }
+
+    @Test
+    public void testGetUsers() {
+        given()
+        .when()
+            .get("/users?page=2")
+        .then()
+            .statusCode(200)
+            .body("page", equalTo(2))
+            .body("data", notNullValue());
+    }
+
+    @Test
+    public void testCreateUser() {
+        String payload = "{\"name\":\"morpheus\",\"job\":\"leader\"}";
+        Response r = given()
+            .header("Content-Type", "application/json")
+            .body(payload)
+        .when()
+            .post("/users")
+        .then()
+            .statusCode(201)
+            .body("name", equalTo("morpheus"))
+            .body("job", equalTo("leader"))
+            .extract().response();
+    }
+
+    @Test
+    public void testUpdateUser() {
+        String payload = "{\"name\":\"morpheus\",\"job\":\"zion resident\"}";
+        given()
+            .header("Content-Type","application/json")
+            .body(payload)
+        .when()
+            .put("/users/2")
+        .then()
+            .statusCode(200)
+            .body("job", equalTo("zion resident"));
+    }
+}

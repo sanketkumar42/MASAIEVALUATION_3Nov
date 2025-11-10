@@ -1,0 +1,45 @@
+package com.quantumleap.pages;
+
+import com.quantumleap.core.WaitUtils;
+import org.openqa.selenium.*;
+
+public class ProductsPage {
+    private WebDriver driver;
+    private WaitUtils wait;
+
+    private By inventoryContainer = By.id("inventory_container");
+    private By addToCartButton(String productName) {
+        // each item has an add-to-cart button; this is a generic locator pattern
+        return By.xpath("//div[text()='" + productName + "']/ancestor::div[@class='inventory_item']//button");
+    }
+    private By shoppingCartBadge = By.cssSelector(".shopping_cart_badge");
+    private By cartLink = By.id("shopping_cart_container");
+
+    public ProductsPage(WebDriver driver) {
+        this.driver = driver;
+        this.wait = new WaitUtils(driver, 10);
+    }
+
+    public boolean isLoaded() {
+        return wait.waitForElementVisible(inventoryContainer).isDisplayed();
+    }
+
+    public void addProductToCart(String productName) {
+        WebElement btn = wait.waitForElementVisible(addToCartButton(productName));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView(true);", btn);
+        btn.click();
+    }
+
+    public int getCartCount() {
+        try {
+            String text = driver.findElement(shoppingCartBadge).getText();
+            return Integer.parseInt(text);
+        } catch (NoSuchElementException e) {
+            return 0;
+        }
+    }
+
+    public void goToCart() {
+        driver.findElement(cartLink).click();
+    }
+}

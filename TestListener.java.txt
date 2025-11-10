@@ -1,0 +1,65 @@
+package com.quantumleap.core;
+
+import com.aventstack.extentreports.*;
+import com.aventstack.extentreports.reporter.ExtentHtmlReporter;
+import org.testng.*;
+import org.testng.xml.XmlSuite;
+import org.openqa.selenium.*;
+import org.apache.commons.io.FileUtils;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Date;
+
+public class TestListener implements ITestListener, ISuiteListener {
+    private static ExtentReports extent;
+    private static ThreadLocal<ExtentTest> test = new ThreadLocal<>();
+
+    @Override
+    public void onStart(ISuite suite) {
+        ExtentHtmlReporter htmlReporter = new ExtentHtmlReporter("sample-reports/extent-report-sample.html");
+        extent = new ExtentReports();
+        extent.attachReporter(htmlReporter);
+    }
+
+    @Override
+    public void onFinish(ISuite suite) {
+        extent.flush();
+    }
+
+    @Override
+    public void onTestStart(ITestResult result) {
+        ExtentTest t = extent.createTest(result.getMethod().getMethodName());
+        test.set(t);
+    }
+
+    @Override
+    public void onTestSuccess(ITestResult result) {
+        test.get().pass("Test passed");
+    }
+
+    @Override
+    public void onTestFailure(ITestResult result) {
+        // capture screenshot
+        WebDriver driver = WebDriverFactory.getDriver();
+        File src = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        String path = "sample-reports/screenshots/" + result.getMethod().getMethodName() + "-" + System.currentTimeMillis() + ".png";
+        try {
+            FileUtils.copyFile(src, new File(path));
+            test.get().fail(result.getThrowable());
+            test.get().addScreenCaptureFromPath(path);
+        } catch (IOException e) {
+            test.get().fail("Failed to attach screenshot: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public void onTestSkipped(ITestResult result) {
+        test.get().skip("Test skipped: " + result.getSkipCausedBy());
+    }
+
+    // other methods left empty
+    public void onTestFailedButWithinSuccessPercentage(ITestResult result) {}
+    public void onStart(ITestContext context) {}
+    public void onFinish(ITestContext context) {}
+}

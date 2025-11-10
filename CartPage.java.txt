@@ -1,0 +1,31 @@
+package com.quantumleap.pages;
+
+import com.quantumleap.core.WaitUtils;
+import org.openqa.selenium.*;
+
+public class CartPage {
+    private WebDriver driver;
+    private WaitUtils wait;
+
+    private By cartItemByName(String name) {
+        return By.xpath("//div[@class='cart_item']//div[text()='" + name + "']");
+    }
+    private By checkoutBtn = By.id("checkout");
+
+    public CartPage(WebDriver driver) {
+        this.driver = driver;
+        this.wait = new WaitUtils(driver, 10);
+    }
+
+    public boolean hasItem(String name) {
+        try {
+            return wait.waitForElementVisible(cartItemByName(name)).isDisplayed();
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public void checkout() {
+        driver.findElement(checkoutBtn).click();
+    }
+}

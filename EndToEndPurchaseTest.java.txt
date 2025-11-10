@@ -1,0 +1,46 @@
+package com.quantumleap.tests.ui;
+
+import com.quantumleap.core.WebDriverFactory;
+import com.quantumleap.pages.*;
+import org.testng.Assert;
+import org.testng.annotations.*;
+import org.openqa.selenium.WebDriver;
+
+@Listeners(com.quantumleap.core.TestListener.class)
+public class EndToEndPurchaseTest {
+    private WebDriver driver;
+    private LoginPage login;
+    private ProductsPage products;
+    private CartPage cart;
+    private CheckoutPage checkout;
+
+    @BeforeMethod
+    public void setup() {
+        driver = WebDriverFactory.getDriver();
+        login = new LoginPage(driver);
+        products = new ProductsPage(driver);
+        cart = new CartPage(driver);
+        checkout = new CheckoutPage(driver);
+        login.open();
+    }
+
+    @Test
+    public void testE2EPurchase() {
+        login.login("standard_user","secret_sauce");
+        Assert.assertTrue(products.isLoaded(), "Products page did not load");
+        String productName = "Sauce Labs Backpack";
+        products.addProductToCart(productName);
+        Assert.assertEquals(products.getCartCount(), 1, "Cart count mismatch");
+        products.goToCart();
+        Assert.assertTrue(cart.hasItem(productName), "Product not in cart");
+        cart.checkout();
+        checkout.fillInfo("John","Doe","12345");
+        checkout.finish();
+        Assert.assertTrue(checkout.isOrderComplete(), "Order not completed");
+    }
+
+    @AfterMethod
+    public void teardown() {
+        WebDriverFactory.quitDriver();
+    }
+}

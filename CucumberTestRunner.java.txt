@@ -1,0 +1,12 @@
+package com.quantumleap.tests.bdd.runners;
+
+import io.cucumber.testng.CucumberOptions;
+import io.cucumber.testng.AbstractTestNGCucumberTests;
+import org.testng.annotations.*;
+
+@CucumberOptions(
+    features = "src/test/resources/features",
+    glue = {"com.quantumleap.tests.bdd.steps"},
+    plugin = {"pretty"}
+)
+public class CucumberTestRunner extends AbstractTestNGCucumberTests {}

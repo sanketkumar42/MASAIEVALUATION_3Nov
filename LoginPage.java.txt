@@ -1,0 +1,45 @@
+package com.quantumleap.pages;
+
+import com.quantumleap.core.WaitUtils;
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
+public class LoginPage {
+    private WebDriver driver;
+    private WaitUtils waitUtils;
+
+    private By username = By.id("user-name");
+    private By password = By.id("password");
+    private By loginBtn = By.id("login-button");
+    private By errorMsg = By.cssSelector("h3[data-test='error']");
+
+    public LoginPage(WebDriver driver) {
+        this.driver = driver;
+        this.waitUtils = new WaitUtils(driver, 10);
+    }
+
+    public void open() {
+        driver.get("https://www.saucedemo.com/");
+    }
+
+    public void login(String user, String pass) {
+        waitUtils.waitForElementVisible(username).clear();
+        driver.findElement(username).sendKeys(user);
+        driver.findElement(password).clear();
+        driver.findElement(password).sendKeys(pass);
+        // Use JS executor to click if normal click fails sometimes
+        try {
+            driver.findElement(loginBtn).click();
+        } catch (Exception e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", driver.findElement(loginBtn));
+        }
+    }
+
+    public String getErrorMessage() {
+        try {
+            return waitUtils.waitForElementVisible(errorMsg).getText();
+        } catch (Exception e) {
+            return "";
+        }
+    }
+}
